@@ -1,0 +1,138 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <winsock2.h>
+
+#define SERVER_IP "127.0.0.1"  // IP do servidor
+#define PORTA 8080              // Porta do servidor
+
+void conectar_ao_servidor(SOCKET *s) {
+    struct sockaddr_in servidor;
+    char mensagem[200] = "CAIXA CONECTADO!";
+
+    // Inicializa a biblioteca de sockets
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        printf("FALHA AO INICIALIZAR A BIBLIOTECA DE SOCKETS.\n");
+        return;
+    }
+
+    // Cria o socket
+    *s = socket(AF_INET, SOCK_STREAM, 0);
+    if (*s == INVALID_SOCKET) {
+        printf("FALHA AO CRIAR SOCKET.\n");
+        WSACleanup();
+        return;
+    }
+
+    // Configura o endereço do servidor
+    servidor.sin_family = AF_INET;
+    servidor.sin_port = htons(PORTA);
+    servidor.sin_addr.s_addr = inet_addr(SERVER_IP);
+
+    // Tenta conectar ao servidor
+    if (connect(*s, (struct sockaddr*)&servidor, sizeof(servidor)) < 0) {
+        printf("FALHA AO CONECTAR AO SERVIDOR. O CAIXA VAI CONTNUAR FUNCIONANDO SEM O SERVIDOR..\n");
+        return; // Permitir que o caixa continue
+    }
+
+    // Envia uma mensagem ao servidor
+    send(*s, mensagem, strlen(mensagem), 0);
+    printf("CONEXAO ESTABELECIDA COM O SERVIDOR!\n");
+}
+
+void listar_produtos() {
+    // Aqui você deve implementar a lógica para listar produtos
+    printf("LISTANDO PRODUTOS...\n");
+    // Exemplo de mensagem se não houver produtos
+    printf("NAO HA PRODUTOS CADASTRADOS.\n");
+}
+
+void alterar_produto() {
+    // Aqui você deve implementar a lógica para alterar um produto
+    printf("ALTERANDO PRODUTO...\n");
+    // Exemplo de mensagem se não houver produtos
+    printf("NAO HA PRODUTOS CADASTRADOS.\n");
+}
+
+void remover_produto() {
+    // Aqui você deve implementar a lógica para remover um produto
+    printf("REMOVENDO PRODUTO...\n");
+    // Exemplo de mensagem se não houver produtos
+    printf("NAO HA PRODUTOS CADASTRADOS.\n");
+}
+
+void realizar_venda() {
+    // Aqui você deve implementar a lógica para realizar uma venda
+    printf("REALIZANDO VENDA...\n");
+    // Exemplo de mensagem se não houver produtos
+    printf("NAO HA PRODUTOS CADASTRADOS.\n");
+}
+
+void historico_vendas() {
+    // Aqui você deve implementar a lógica para mostrar o histórico de vendas
+    printf("HISTORICO DE VENDAS...\n");
+    // Exemplo de mensagem se não houver vendas
+    printf("NAO HA VENDAS REGISTRADAS.\n");
+}
+
+void exibir_menu() {
+    printf("==========================\n");
+    printf("         MENU CAIXA\n");
+    printf("==========================\n");
+    printf("1 - LISTAR PRODUTOS\n");
+    printf("2 - ALTERAR PRODUTOS\n");
+    printf("3 - REMOVER PRODUTO\n");
+    printf("4 - REALIZAR VENDAS\n");
+    printf("5 - HISTORICO DE VENDAS\n");
+    printf("6 - SAIR\n");
+    printf("=========================\n");
+    printf("DIGITE A OPCAO: ");
+}
+
+int main() {
+    SOCKET s;
+    conectar_ao_servidor(&s); // Chama a função de conexão ao iniciar
+
+    if (s == INVALID_SOCKET) {
+        printf("NAO FOI POSSIVEL CONECTAR AO SERVIDOR. O CAIXA SERA ENCERRADO.\n");
+        return 1; // Encerrar o programa se não for possível conectar
+    }
+
+    int opcao;
+
+    while (1) {
+        exibir_menu(); // Mostra o menu
+        scanf("%d", &opcao); // Lê a opção do usuário
+
+        switch (opcao) {
+            case 1:
+                listar_produtos();
+                break;
+            case 2:
+                alterar_produto();
+                break;
+            case 3:
+                remover_produto();
+                break;
+            case 4:
+                realizar_venda();
+                break;
+            case 5:
+                historico_vendas();
+                break;
+            case 6:
+                printf("SAINDO DO CAIXA...\n");
+                closesocket(s); // Fecha o socket antes de sair
+                WSACleanup(); // Limpa a biblioteca de sockets
+                return 0;
+            default:
+                printf("OPCAO INVALIDA! TENTE NOVAMENTE.\n");
+        }
+    }
+
+    // Fecha o socket ao sair
+    closesocket(s);
+    WSACleanup();
+    return 0;
+}

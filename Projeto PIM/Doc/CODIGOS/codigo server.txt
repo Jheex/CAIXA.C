@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <winsock2.h>
+
+#define PORT 8080
+#define MAX_PRODUTOS 100
+#define NOME_LEN 50
+
+typedef struct {
+    int codigo;
+    char nome[NOME_LEN];
+    float preco;
+} Produto;
+
+Produto produtos[MAX_PRODUTOS];
+int total_produtos = 0;
+
+// (Demais funções do código do caixa aqui...)
+
+void enviarVendaAoServidor(float totalCompra) {
+    WSADATA wsa;
+    SOCKET sock;
+    struct sockaddr_in server;
+    char message[1024];
+    
+    // Inicializa o Winsock
+    WSAStartup(MAKEWORD(2, 2), &wsa);
+    
+    // Cria o socket
+    sock = socket(AF_INET, SOCK_STREAM, 0);
+    
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = inet_addr("127.0.0.1"); // Endereço do servidor (localhost)
+    server.sin_port = htons(PORT);
+    
+    // Conecta ao servidor
+    if (connect(sock, (struct sockaddr *)&server, sizeof(server)) < 0) {
+        printf("Conexão falhou\n");
+        return;
+    }
+    
+    // Envia a venda ao servidor
+    sprintf(message, "Venda total: R$ %.2f", totalCompra);
+    send(sock, message, strlen(message), 0);
+    
+    // Recebe resposta do servidor
+    char server_reply[2000];
+    recv(sock, server_reply, sizeof(server_reply), 0);
+    printf("Resposta do servidor: %s\n", server_reply);
+    
+    // Limpa o socket e finaliza o Winsock
+    closesocket(sock);
+    WSACleanup();
+}
+
+void finalizarCompra(float totalCompra) {
+    int opcaoPagamento;
+    // ... (Lógica de pagamento permanece a mesma)
+
+    // Envia a venda ao servidor após finalizar a compra
+    enviarVendaAoServidor(totalCompra);
+}
+
+// (Demais funções do código do caixa aqui...)
+
+int main() {
+    menu();
+    return 0;
+}
